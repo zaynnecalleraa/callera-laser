@@ -640,3 +640,22 @@ main.admin .container{
   padding-inline: 12px;/* respiro nas laterais */
 }
 
+#pImagePreview {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* Altera a imagem da página de produto para preencher completamente o
+   contêiner sem deformar a proporção, recortando quando necessário. */
+.pv-media img {
+  object-fit: cover;
+}
+
+/* Garante que a imagem da página de produto preencha o espaço sem deixar margens */
+.pv-media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover !important;
+}

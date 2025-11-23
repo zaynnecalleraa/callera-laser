@@ -1,4 +1,20 @@
-// assets/js/admin.js
+/*
+ * Arquivo: updated_admin.js
+ *
+ * Este script ajusta funcionalidades de administração para o site Callera Laser.
+ * Foram realizadas duas correções principais em relação à versão fornecida:
+ *
+ * 1. Funções de conversão de valores monetários (`moneyFormat` e `moneyParse`)
+ *    foram revisadas para eliminar um bug que podia multiplicar ou distorcer
+ *    valores ao cadastrar produtos. Agora, ambas as funções trabalham de forma
+ *    mais robusta com diferentes formatos de entrada (string ou número) e
+ *    garantem sempre duas casas decimais no formato brasileiro.
+ *
+ * 2. A lógica de pré-visualização de imagens (pImagePreview) continua a mesma,
+ *    porém recomenda‑se complementar com uma regra de CSS para garantir que as
+ *    imagens sempre preencham seu container (ver arquivo CSS atualizado).
+ */
+
 (function(){
   const supa = window.SUPA;
 
@@ -8,16 +24,59 @@
   const toastBox = $('#toast');
   const isMobile = () => window.matchMedia('(max-width: 640px)').matches;
 
-
+  /**
+   * Formata um valor numérico ou string para o formato monetário brasileiro.
+   * Esta implementação corrige um bug da versão original em que alguns valores
+   * acabavam deslocados ou com dígitos repetidos. Aceita números ou strings
+   * contendo apenas dígitos, pontos e vírgulas. Qualquer outro caractere é
+   * ignorado. Retorna sempre duas casas decimais.
+   *
+   * @param {number|string|null|undefined} n O valor a ser formatado
+   * @returns {string} Valor formatado, ex: "1.234,56"
+   */
   function moneyFormat(n){
-    const v = Number(String(n).replace(/[^\d,.-]/g,'').replace(/\./g,'').replace(',', '.')) || 0;
-    return v.toLocaleString('pt-BR',{minimumFractionDigits:2, maximumFractionDigits:2});
+    // Se o valor já é numérico, apenas formata
+    let num;
+    if (typeof n === 'number') {
+      num = n;
+    } else {
+      // Remove qualquer caractere que não seja dígito, vírgula, ponto ou sinal
+      const cleaned = String(n || '')
+        .replace(/[\sR$\u00A0]/g, '') // remove espaços e símbolos de moeda
+        .replace(/[^\d,.-]/g, '')
+        .replace(/\./g, '')         // remove separadores de milhar
+        .replace(',', '.');          // converte vírgula decimal para ponto
+      num = parseFloat(cleaned);
+      if (!isFinite(num)) num = 0;
+    }
+    return num.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   }
+
+  /**
+   * Converte uma string de moeda (ou número) para um valor numérico. A função
+   * sanitiza a entrada removendo símbolos de moeda, espaços e separadores de
+   * milhar antes de converter. Se a string estiver vazia ou não for possível
+   * obter um número válido, retorna null. Não há conversão implícita por 100;
+   * se for necessário armazenar valores em centavos, faça a divisão ou
+   * multiplicação fora desta função.
+   *
+   * @param {number|string|null|undefined} v Valor de entrada (pode ser número ou string)
+   * @returns {number|null} Valor numérico ou null se não for aplicável
+   */
   function moneyParse(v){
-    if(typeof v === 'number') return v;
-    const clean = String(v||'').replace(/[^\d,.-]/g,'').replace(/\./g,'').replace(',', '.');
-    return clean === '' ? null : Number(clean||0);
+    if (v == null || v === '') return null;
+    if (typeof v === 'number') return v;
+    const str = String(v).trim();
+    if (!str) return null;
+    const sanitized = str
+      .replace(/[\sR$\u00A0]/g, '')
+      .replace(/[^\d,.-]/g, '')
+      .replace(/\./g, '')
+      .replace(',', '.');
+    const num = parseFloat(sanitized);
+    return isNaN(num) ? null : num;
   }
+
   function showToast(msg, type='ok'){
     const t = document.createElement('div');
     t.className = `toast ${type}`;
@@ -64,7 +123,6 @@ async function ensureAuthOrShowGate(){
     return false;
   }
 }
-
 
   // ---- KPI ----
   async function loadKPIs(){
@@ -151,48 +209,46 @@ async function ensureAuthOrShowGate(){
   }
 
   function renderProductsTable(list){
-  const body = $('#tblProducts tbody');
-  body.innerHTML='';
-  const rowset = (showAll? list : list.slice(0, showLimit));
-  const mobile = isMobile();
+    const body = $('#tblProducts tbody');
+    body.innerHTML='';
+    const rowset = (showAll? list : list.slice(0, showLimit));
+    const mobile = isMobile();
 
-  rowset.forEach(p=>{
-    const price   = (p.price==null? null : Number(p.price));
-    const promo   = (p.on_sale && p.promo_price!=null) ? Number(p.promo_price||0) : null;
-    const instOk  = !!p.installments_enabled;
-    const instVal = (p.installment_value ?? null);
+    rowset.forEach(p=>{
+      const price   = (p.price==null? null : Number(p.price));
+      const promo   = (p.on_sale && p.promo_price!=null) ? Number(p.promo_price||0) : null;
+      const instOk  = !!p.installments_enabled;
+      const instVal = (p.installment_value ?? null);
 
-    const tr=document.createElement('tr');
-    if (mobile) tr.classList.add('collapsed');  // só colapsa no mobile
+      const tr=document.createElement('tr');
+      if (mobile) tr.classList.add('collapsed');  // só colapsa no mobile
 
-    const toggleBtn = mobile ? `<button class="btn-sm ghost toggle-row" data-toggle="row" type="button">Ver mais</button>` : '';
+      const toggleBtn = mobile ? `<button class="btn-sm ghost toggle-row" data-toggle="row" type="button">Ver mais</button>` : '';
 
-    tr.innerHTML = `
-      <td data-label="Nome">
-        <div style="display:flex;flex-direction:column;gap:4px">
-          <strong>${p.name||'—'}</strong>
-          ${toggleBtn}
-        </div>
-      </td>
-      <td data-label="Preço">${price!=null? 'R$ '+moneyFormat(price) : '—'}</td>
-      <td data-label="Promoção">${promo!=null? 'R$ '+moneyFormat(promo) : '—'}</td>
-      <td data-label="Parcelas?">${instOk? 'sim' : '—'}</td>
-      <td data-label="Valor parcela">${(instOk && instVal!=null) ? 'R$ '+moneyFormat(instVal) : '—'}</td>
-      <td data-label="Estoque">${p.stock!=null? p.stock : '—'}</td>
-      <td data-label="Categorias">${p._catNames.length? p._catNames.map(n=>`<span class="chip">${n}</span>`).join(' ') : '—'}</td>
-      <td data-label="Destaque">${p.featured? 'sim' : '—'}</td>
-      <td class="actions-col right">
-        <button class="btn-sm" data-edit="${p.id}">Editar</button>
-        <button class="btn-sm danger" data-del="${p.id}">Excluir</button>
-      </td>
-    `;
-    body.appendChild(tr);
-  });
+      tr.innerHTML = `
+        <td data-label="Nome">
+          <div style="display:flex;flex-direction:column;gap:4px">
+            <strong>${p.name||'—'}</strong>
+            ${toggleBtn}
+          </div>
+        </td>
+        <td data-label="Preço">${price!=null? 'R$ '+moneyFormat(price) : '—'}</td>
+        <td data-label="Promoção">${promo!=null? 'R$ '+moneyFormat(promo) : '—'}</td>
+        <td data-label="Parcelas?">${instOk? 'sim' : '—'}</td>
+        <td data-label="Valor parcela">${(instOk && instVal!=null) ? 'R$ '+moneyFormat(instVal) : '—'}</td>
+        <td data-label="Estoque">${p.stock!=null? p.stock : '—'}</td>
+        <td data-label="Categorias">${p._catNames.length? p._catNames.map(n=>`<span class="chip">${n}</span>`).join(' ') : '—'}</td>
+        <td data-label="Destaque">${p.featured? 'sim' : '—'}</td>
+        <td class="actions-col right">
+          <button class="btn-sm" data-edit="${p.id}">Editar</button>
+          <button class="btn-sm danger" data-del="${p.id}">Excluir</button>
+        </td>
+      `;
+      body.appendChild(tr);
+    });
 
-  $('#btnToggleMore').textContent = showAll? 'Ocultar' : 'Ver mais';
-}
-
-
+    $('#btnToggleMore').textContent = showAll? 'Ocultar' : 'Ver mais';
+  }
 
   async function loadAndRenderProducts(){
     productsCache = await fetchProducts();
@@ -416,40 +472,40 @@ async function loadOrders(){
 
 
   function renderOrders(){
-  const body = $('#tblOrders tbody'); body.innerHTML='';
-  const rows = showOrdersAll? ordersCache : ordersCache.slice(0, ORDERS_LIMIT);
-  const mobile = isMobile();
+    const body = $('#tblOrders tbody'); body.innerHTML='';
+    const rows = showOrdersAll? ordersCache : ordersCache.slice(0, ORDERS_LIMIT);
+    const mobile = isMobile();
 
-  rows.forEach((o)=>{
-    const when  = new Date(o.created_at);
-    const itens = (o.items||[]).map(i=>`${i.qty||1}× ${i.name}`).join(', ');
+    rows.forEach((o)=>{
+      const when  = new Date(o.created_at);
+      const itens = (o.items||[]).map(i=>`${i.qty||1}× ${i.name}`).join(', ');
 
-    const tr=document.createElement('tr');
-    if (mobile) tr.classList.add('collapsed');
+      const tr=document.createElement('tr');
+      if (mobile) tr.classList.add('collapsed');
 
-    const toggleBtn = mobile ? `<button class="btn-sm ghost toggle-row" data-toggle="row" type="button">Ver mais</button>` : '';
+      const toggleBtn = mobile ? `<button class="btn-sm ghost toggle-row" data-toggle="row" type="button">Ver mais</button>` : '';
 
-    tr.innerHTML = `
-      <td data-label="#">${o.id.slice(0,6)}</td>
-      <td data-label="Cliente">
-        <div style="display:flex;flex-direction:column;gap:4px">
-          <strong>${o.customer||'—'}</strong>
-          ${toggleBtn}
-        </div>
-      </td>
-      <td data-label="Itens">${itens||'—'}</td>
-      <td data-label="Quando">${when.toLocaleDateString('pt-BR')} ${when.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}</td>
-      <td data-label="Status">${o.status||'—'}</td>
-      <td class="actions-col right">
-        <button class="btn-sm" data-view-order="${o.id}">Ver</button>
-        <button class="btn-sm danger" data-del-order="${o.id}">Excluir</button>
-      </td>
-    `;
-    body.appendChild(tr);
-  });
+      tr.innerHTML = `
+        <td data-label="#">${o.id.slice(0,6)}</td>
+        <td data-label="Cliente">
+          <div style="display:flex;flex-direction:column;gap:4px">
+            <strong>${o.customer||'—'}</strong>
+            ${toggleBtn}
+          </div>
+        </td>
+        <td data-label="Itens">${itens||'—'}</td>
+        <td data-label="Quando">${when.toLocaleDateString('pt-BR')} ${when.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}</td>
+        <td data-label="Status">${o.status||'—'}</td>
+        <td class="actions-col right">
+          <button class="btn-sm" data-view-order="${o.id}">Ver</button>
+          <button class="btn-sm danger" data-del-order="${o.id}">Excluir</button>
+        </td>
+      `;
+      body.appendChild(tr);
+    });
 
-  $('#btnToggleMoreOrders').textContent = showOrdersAll? 'Ocultar' : 'Ver mais';
-}
+    $('#btnToggleMoreOrders').textContent = showOrdersAll? 'Ocultar' : 'Ver mais';
+  }
 
 
   $('#btnToggleMoreOrders')?.addEventListener('click', ()=>{ showOrdersAll=!showOrdersAll; renderOrders(); });
@@ -534,7 +590,7 @@ function startOrdersPolling(){
 }
 
   // ---- Bootstrap ----
-  // ---- Bootstrap ----
+// ---- Bootstrap ----
 // ---- Bootstrap ----
 (async function init(){
   const ok = await ensureAuthOrShowGate();
@@ -557,7 +613,6 @@ function startOrdersPolling(){
   }
   startApp();
 })();
-
 
 
   async function startApp(){
