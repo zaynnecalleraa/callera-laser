@@ -560,6 +560,10 @@ main.admin .kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
   .pill.gold{ width:min(268px,86vw) }
 }
 
+.pill.gold{transition:transform .2s ease,box-shadow .2s ease,filter .2s ease}
+.pill.gold:hover{transform:scale(1.07);box-shadow:0 10px 28px rgba(196,154,59,.45);filter:brightness(1.08)}
+.pill.gold:active{transform:scale(.97)}
+
 /* ========= Admin — título + toolbar (filtros/novo) SEM quebrar ========= */
 .card-head{ gap:.75rem; flex-wrap:wrap }
 .card-head .actions{
