@@ -276,17 +276,15 @@ main.admin .kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
 .sr-txt .sr-price{ font:700 .95rem var(--ff-sans); color:#6a530f }
 .sr-inst{ font:600 .85rem var(--ff-sans); color:#9a7a2a }
 
-/* ---------- GRID de cards: 5 colunas desktop, 3 tablet, 2 mobile ---------- */
+/* ---------- GRID de cards: auto-fit centraliza cards independente da quantidade ---------- */
 .cards,
 #catalogGrid{
   display:grid;
-  grid-template-columns: repeat(5, 170px);
+  grid-template-columns: repeat(auto-fit, 170px);
   justify-content: center;
   gap: 18px;
 }
-@media (max-width: 1199.98px){ .cards, #catalogGrid{ grid-template-columns: repeat(4,170px) } }
-@media (max-width: 1023.98px){ .cards, #catalogGrid{ grid-template-columns: repeat(3,170px) } }
-@media (max-width: 767.98px) { .cards, #catalogGrid{ grid-template-columns: repeat(2,170px); gap:14px } }
+@media (max-width: 767.98px) { .cards, #catalogGrid{ grid-template-columns: repeat(auto-fit, minmax(150px,1fr)); gap:14px } }
 
 /* ---------- MINI CARD 170×268 (Figma) ---------- */
 .mini-card{
