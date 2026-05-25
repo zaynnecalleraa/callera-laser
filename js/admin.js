@@ -1,20 +1,3 @@
-/*
- * Arquivo: updated_admin.js
- *
- * Este script ajusta funcionalidades de administração para o site Callera Laser.
- * Foram realizadas duas correções principais em relação à versão fornecida:
- *
- * 1. Funções de conversão de valores monetários (`moneyFormat` e `moneyParse`)
- *    foram revisadas para eliminar um bug que podia multiplicar ou distorcer
- *    valores ao cadastrar produtos. Agora, ambas as funções trabalham de forma
- *    mais robusta com diferentes formatos de entrada (string ou número) e
- *    garantem sempre duas casas decimais no formato brasileiro.
- *
- * 2. A lógica de pré-visualização de imagens (pImagePreview) continua a mesma,
- *    porém recomenda‑se complementar com uma regra de CSS para garantir que as
- *    imagens sempre preencham seu container (ver arquivo CSS atualizado).
- */
-
 (function(){
   const supa = window.SUPA;
 
@@ -24,16 +7,7 @@
   const toastBox = $('#toast');
   const isMobile = () => window.matchMedia('(max-width: 640px)').matches;
 
-  /**
-   * Formata um valor numérico ou string para o formato monetário brasileiro.
-   * Esta implementação corrige um bug da versão original em que alguns valores
-   * acabavam deslocados ou com dígitos repetidos. Aceita números ou strings
-   * contendo apenas dígitos, pontos e vírgulas. Qualquer outro caractere é
-   * ignorado. Retorna sempre duas casas decimais.
-   *
-   * @param {number|string|null|undefined} n O valor a ser formatado
-   * @returns {string} Valor formatado, ex: "1.234,56"
-   */
+
   function moneyFormat(n){
     // Se o valor já é numérico, apenas formata
     let num;
@@ -52,17 +26,7 @@
     return num.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   }
 
-  /**
-   * Converte uma string de moeda (ou número) para um valor numérico. A função
-   * sanitiza a entrada removendo símbolos de moeda, espaços e separadores de
-   * milhar antes de converter. Se a string estiver vazia ou não for possível
-   * obter um número válido, retorna null. Não há conversão implícita por 100;
-   * se for necessário armazenar valores em centavos, faça a divisão ou
-   * multiplicação fora desta função.
-   *
-   * @param {number|string|null|undefined} v Valor de entrada (pode ser número ou string)
-   * @returns {number|null} Valor numérico ou null se não for aplicável
-   */
+  
   function moneyParse(v){
     if (v == null || v === '') return null;
     if (typeof v === 'number') return v;

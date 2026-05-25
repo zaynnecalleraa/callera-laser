@@ -117,7 +117,7 @@ a{color:inherit;text-decoration:none}
 .toast.show{opacity:1;transform:translateY(0)}
 
 /* ===================== HERO ====================== */
-.hero-banner{width:100%;height:auto;border-radius:18px;border:1px solid var(--line);box-shadow:var(--shadow);margin:20px 0}
+.hero-banner{width:100%;height:auto;border-radius:18px;border:2px solid var(--gold);box-shadow:var(--shadow);margin:20px 0}
 
 /* Títulos de seção */
 .tt-title{font-family:var(--ff-display);font-weight:900;color:var(--gold);font-size:clamp(1.25rem,2.4vw,1.7rem);line-height:1;margin:.5rem 0 1rem;text-align:center}
