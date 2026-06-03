@@ -62,7 +62,11 @@
 
     if (error) {
       console.error('[agendamento] insert error:', error);
-      showError('Não foi possível enviar o agendamento. Tente novamente ou entre em contato pelo WhatsApp.');
+      const msg = error.message || '';
+      const hint = /relation|does not exist/i.test(msg)
+        ? 'A tabela de agendamentos ainda não foi criada no banco. Informe o administrador.'
+        : 'Não foi possível enviar o agendamento. Tente novamente ou entre em contato pelo WhatsApp.';
+      showError(hint);
       return;
     }
 
