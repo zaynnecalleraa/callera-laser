@@ -160,7 +160,7 @@ async function ensureAuthOrShowGate(){
 
   // ---- Produtos ----
   let productsCache = [];
-  let showLimit = 10;
+  let showLimit = 5;
   let showAll = false;
 
   async function fetchProducts(){
