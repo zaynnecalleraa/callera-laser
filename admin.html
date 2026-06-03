@@ -365,16 +365,17 @@
       <div id="agendModalBody" style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem 1.5rem">
         <!-- via JS -->
       </div>
-      <div class="form-foot" style="margin-top:1rem">
+      <div class="form-foot" style="margin-top:1rem;flex-wrap:wrap;gap:.5rem">
         <button class="btn-sm" type="button" data-close-agend>Fechar</button>
-        <div class="right">
+        <a id="btnWhatsAgend" class="btn-sm" style="background:#25D366;color:#fff;border:0;text-decoration:none" href="#" target="_blank" rel="noopener">WhatsApp</a>
+        <div class="right" style="display:flex;gap:.5rem;flex-wrap:wrap">
           <select id="agendModalStatus" class="btn-sm" style="padding:0 .9rem">
             <option value="pendente">Pendente</option>
             <option value="confirmado">Confirmado</option>
             <option value="cancelado">Cancelado</option>
             <option value="concluido">Concluído</option>
           </select>
-          <button id="btnSaveAgendStatus" class="btn-sm solid" type="button" style="margin-left:.5rem">Salvar status</button>
+          <button id="btnSaveAgendStatus" class="btn-sm solid" type="button">Salvar status</button>
         </div>
       </div>
     </div>

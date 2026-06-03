@@ -628,6 +628,20 @@ async function loadOrders(){
     const statusSel = $('#agendModalStatus');
     if(statusSel) statusSel.value = agend.status || 'pendente';
 
+    // Botão WhatsApp com mensagem contextual
+    const waBtn = $('#btnWhatsAgend');
+    if(waBtn && agend.telefone){
+      const tel = agend.telefone.replace(/\D/g,'');
+      const statusMsg = {
+        pendente: `Olá ${agend.nome}! Recebemos seu agendamento para *${agend.servico}* no dia *${dataFmt}* às *${agend.horario ? agend.horario.slice(0,5) : ''}*. Entraremos em contato em breve para confirmar. 😊`,
+        confirmado: `Olá ${agend.nome}! Seu agendamento para *${agend.servico}* está *confirmado* para o dia *${dataFmt}* às *${agend.horario ? agend.horario.slice(0,5) : ''}*. Te esperamos! 💛`,
+        cancelado: `Olá ${agend.nome}! Infelizmente precisamos *cancelar* seu agendamento para *${agend.servico}* no dia *${dataFmt}*. Por favor, entre em contato para remarcar.`,
+        concluido: `Olá ${agend.nome}! Obrigada por sua visita à Callera Laser. Esperamos te ver em breve! 💛`,
+      };
+      const msg = statusMsg[agend.status || 'pendente'] || statusMsg.pendente;
+      waBtn.href = `https://wa.me/55${tel}?text=${encodeURIComponent(msg)}`;
+    }
+
     agendDlg?.showModal();
   }
 

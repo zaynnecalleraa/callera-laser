@@ -4,32 +4,22 @@
 .agend-hero {
   background: var(--cream);
   border-bottom: 1px solid var(--line);
-  padding: clamp(20px, 4vw, 36px) 0;
-}
-
-.agend-hero-inner {
-  display: flex;
-  align-items: center;
-  gap: 1.25rem;
-}
-
-.agend-hero-inner img {
-  flex-shrink: 0;
-  opacity: .85;
+  padding: clamp(28px, 5vw, 48px) 0;
+  text-align: center;
 }
 
 .agend-title {
-  margin: 0 0 .35rem;
-  font: 900 clamp(1.3rem, 3vw, 1.75rem) / 1 var(--ff-display);
+  margin: 0 0 .6rem;
+  font: 900 clamp(1.4rem, 3vw, 1.9rem) / 1 var(--ff-display);
   color: var(--gold);
   letter-spacing: .02em;
 }
 
 .agend-sub {
-  margin: 0;
+  margin: 0 auto;
   font: 400 clamp(.88rem, 1.5vw, .97rem) var(--ff-sans);
   color: var(--ink);
-  max-width: 560px;
+  max-width: 480px;
 }
 
 /* Seção principal */
@@ -180,8 +170,6 @@
 
 /* Responsivo */
 @media (max-width: 560px) {
-  .agend-hero-inner img { display: none; }
-
   .booking-grid {
     grid-template-columns: 1fr;
   }
