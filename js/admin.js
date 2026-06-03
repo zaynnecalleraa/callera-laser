@@ -99,6 +99,10 @@ async function ensureAuthOrShowGate(){
     const d0 = new Date(); d0.setHours(0,0,0,0);
     const today = await supa.from('orders').select('id', { count: 'exact', head: true }).gte('created_at', d0.toISOString());
     $('#kpiToday').textContent = String(today.count || 0);
+
+    const pendentes = await supa.from('agendamentos').select('id', { count: 'exact', head: true }).eq('status', 'pendente');
+    const kpiAgend = $('#kpiAgend');
+    if(kpiAgend) kpiAgend.textContent = String(pendentes.count || 0);
   }
 
   // ---- Categorias ----
@@ -519,6 +523,157 @@ async function loadOrders(){
     }
   });
 
+  // ---- Agendamentos ----
+  let agendCache = [];
+  let showAgendAll = false;
+  const AGEND_LIMIT = 10;
+  let agendEditingId = null;
+
+  async function loadAgendamentos(){
+    try{
+      const { data, error } = await supa
+        .from('agendamentos')
+        .select('id,nome,telefone,email,servico,data,horario,observacoes,status,created_at')
+        .order('data', { ascending: true })
+        .order('horario', { ascending: true });
+      if(error){ console.error('[agend] select error:', error); return []; }
+      return data || [];
+    }catch(err){ console.error('[agend] unexpected:', err); return []; }
+  }
+
+  function agendStatusLabel(s){
+    const map = { pendente:'Pendente', confirmado:'Confirmado', cancelado:'Cancelado', concluido:'Concluído' };
+    return map[s] || s || '—';
+  }
+
+  function renderAgendamentos(list){
+    const body = $('#tblAgend tbody');
+    if(!body) return;
+    body.innerHTML = '';
+    const rows = showAgendAll ? list : list.slice(0, AGEND_LIMIT);
+    const mobile = isMobile();
+
+    rows.forEach(a => {
+      const dataFmt = a.data ? new Date(a.data + 'T12:00:00').toLocaleDateString('pt-BR') : '—';
+      const tr = document.createElement('tr');
+      if(mobile) tr.classList.add('collapsed');
+
+      const toggleBtn = mobile ? `<button class="btn-sm ghost toggle-row" data-toggle="row" type="button">Ver mais</button>` : '';
+
+      tr.innerHTML = `
+        <td data-label="Cliente">
+          <div style="display:flex;flex-direction:column;gap:4px">
+            <strong>${a.nome||'—'}</strong>
+            <span style="color:#8a8278;font-size:.82rem">${a.telefone||''}</span>
+            ${toggleBtn}
+          </div>
+        </td>
+        <td data-label="Serviço">${a.servico||'—'}</td>
+        <td data-label="Data">${dataFmt}</td>
+        <td data-label="Horário">${a.horario ? a.horario.slice(0,5) : '—'}</td>
+        <td data-label="Status"><span class="status-chip status-${a.status||'pendente'}">${agendStatusLabel(a.status)}</span></td>
+        <td class="actions-col right">
+          <button class="btn-sm" data-view-agend="${a.id}">Ver</button>
+          <button class="btn-sm danger" data-del-agend="${a.id}">Excluir</button>
+        </td>
+      `;
+      body.appendChild(tr);
+    });
+
+    const btn = $('#btnToggleMoreAgend');
+    if(btn) btn.textContent = showAgendAll ? 'Ocultar' : 'Ver mais';
+  }
+
+  function applyAgendFilter(){
+    const f = ($('#agendFilter')?.value) || 'all';
+    let list = agendCache.slice();
+    if(f === 'today'){
+      const todayStr = new Date().toISOString().split('T')[0];
+      list = list.filter(a => a.data === todayStr);
+    } else if(f !== 'all'){
+      list = list.filter(a => a.status === f);
+    }
+    renderAgendamentos(list);
+  }
+
+  $('#agendFilter')?.addEventListener('change', applyAgendFilter);
+  $('#btnToggleMoreAgend')?.addEventListener('click', ()=>{ showAgendAll = !showAgendAll; applyAgendFilter(); });
+
+  // Modal de detalhes
+  const agendDlg = $('#agendModal');
+
+  function openAgendModal(agend){
+    agendEditingId = agend.id;
+    const dataFmt = agend.data ? new Date(agend.data + 'T12:00:00').toLocaleDateString('pt-BR') : '—';
+
+    const fields = [
+      ['Nome', agend.nome],
+      ['WhatsApp', agend.telefone],
+      ['E-mail', agend.email || '—'],
+      ['Serviço', agend.servico],
+      ['Data', dataFmt],
+      ['Horário', agend.horario ? agend.horario.slice(0,5) : '—'],
+      ['Observações', agend.observacoes || '—'],
+      ['Solicitado em', agend.created_at ? new Date(agend.created_at).toLocaleString('pt-BR') : '—'],
+    ];
+
+    const body = $('#agendModalBody');
+    body.innerHTML = fields.map(([lbl, val]) => `
+      <div class="detail-row">
+        <span class="detail-label">${lbl}</span>
+        <span class="detail-value">${val}</span>
+      </div>
+    `).join('');
+
+    const statusSel = $('#agendModalStatus');
+    if(statusSel) statusSel.value = agend.status || 'pendente';
+
+    agendDlg?.showModal();
+  }
+
+  agendDlg?.addEventListener('click', e => {
+    if(e.target.hasAttribute('data-close-agend')) agendDlg.close();
+  });
+
+  $('#btnSaveAgendStatus')?.addEventListener('click', async () => {
+    if(!agendEditingId) return;
+    const status = $('#agendModalStatus')?.value;
+    const { error } = await supa.from('agendamentos').update({ status }).eq('id', agendEditingId);
+    if(error){ showToast('Erro ao atualizar status', 'err'); return; }
+    showToast('Status atualizado');
+    agendDlg?.close();
+    agendCache = await loadAgendamentos();
+    applyAgendFilter();
+    loadKPIs();
+  });
+
+  $('#tblAgend')?.addEventListener('click', async e => {
+    const viewBtn = e.target.closest('[data-view-agend]');
+    const delBtn  = e.target.closest('[data-del-agend]');
+
+    if(viewBtn){
+      const id = viewBtn.dataset.viewAgend;
+      const agend = agendCache.find(a => a.id === id);
+      if(agend) openAgendModal(agend);
+    }
+
+    if(delBtn){
+      if(!confirm('Excluir agendamento?')) return;
+      const id = delBtn.dataset.delAgend;
+      const { error } = await supa.from('agendamentos').delete().eq('id', id);
+      if(error){ showToast('Erro ao excluir', 'err'); return; }
+      showToast('Agendamento excluído');
+      agendCache = await loadAgendamentos();
+      applyAgendFilter();
+      loadKPIs();
+    }
+  });
+
+  async function loadAgendAndRender(){
+    agendCache = await loadAgendamentos();
+    applyAgendFilter();
+  }
+
   // ---- LOGOUT ----
   $('#btnLogout')?.addEventListener('click', async ()=>{
     try{ await supa.auth.signOut(); }catch{}
@@ -581,6 +736,11 @@ function startOrdersPolling(){
 
   async function startApp(){
   await Promise.all([ loadKPIs(), renderCategories(), loadAndRenderProducts() ]);
+
+  // Agendamentos
+  if(document.getElementById('tblAgend')){
+    await loadAgendAndRender();
+  }
 
   // só roda a parte de pedidos se a tabela existir no DOM
   const hasOrdersUI = !!document.getElementById('tblOrders');

@@ -1,0 +1,203 @@
+/* ===== Página de Agendamento ===== */
+
+/* Hero */
+.agend-hero {
+  background: var(--cream);
+  border-bottom: 1px solid var(--line);
+  padding: clamp(20px, 4vw, 36px) 0;
+}
+
+.agend-hero-inner {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+}
+
+.agend-hero-inner img {
+  flex-shrink: 0;
+  opacity: .85;
+}
+
+.agend-title {
+  margin: 0 0 .35rem;
+  font: 900 clamp(1.3rem, 3vw, 1.75rem) / 1 var(--ff-display);
+  color: var(--gold);
+  letter-spacing: .02em;
+}
+
+.agend-sub {
+  margin: 0;
+  font: 400 clamp(.88rem, 1.5vw, .97rem) var(--ff-sans);
+  color: var(--ink);
+  max-width: 560px;
+}
+
+/* Seção principal */
+.agend-section {
+  padding-block: clamp(24px, 4vw, 48px);
+}
+
+/* Card do formulário */
+.booking-card {
+  background: #fff;
+  border: 1px solid var(--gold);
+  border-radius: var(--radius-l);
+  padding: clamp(20px, 4vw, 36px);
+  max-width: 700px;
+  margin: 0 auto;
+  box-shadow: var(--shadow);
+}
+
+/* Grid do formulário */
+.booking-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: clamp(.75rem, 2vw, 1rem);
+}
+
+.booking-field {
+  display: flex;
+  flex-direction: column;
+  gap: .35rem;
+}
+
+.booking-field.full {
+  grid-column: 1 / -1;
+}
+
+.booking-field label {
+  font: 700 .85rem var(--ff-display);
+  color: var(--gold);
+}
+
+.booking-field .optional {
+  font-weight: 400;
+  color: #a7a092;
+}
+
+.booking-field input,
+.booking-field select,
+.booking-field textarea {
+  width: 100%;
+  border: 1px solid var(--gold);
+  border-radius: 10px;
+  padding: .65rem .9rem;
+  font: 500 .95rem var(--ff-sans);
+  color: #2d2a25;
+  background: #fff;
+  outline: 0;
+  transition: box-shadow .15s;
+}
+
+.booking-field input:focus,
+.booking-field select:focus,
+.booking-field textarea:focus {
+  box-shadow: 0 0 0 3px rgba(196, 154, 59, .2);
+}
+
+.booking-field select {
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23c49a3b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right .85rem center;
+  padding-right: 2.5rem;
+}
+
+.booking-field textarea {
+  resize: vertical;
+  min-height: 88px;
+}
+
+/* Mensagem de erro */
+.booking-error {
+  background: #FEE2E2;
+  color: #991B1B;
+  border: 1px solid #FECACA;
+  border-radius: 10px;
+  padding: .75rem 1rem;
+  font: 500 .9rem var(--ff-sans);
+  margin-top: .75rem;
+}
+
+/* Rodapé do formulário */
+.booking-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-top: 1.25rem;
+  padding-top: 1rem;
+  border-top: 1px dashed var(--line);
+}
+
+.booking-note {
+  margin: 0;
+  font: 400 .82rem var(--ff-sans);
+  color: #a7a092;
+  max-width: 380px;
+}
+
+/* Estado de sucesso */
+.booking-success {
+  text-align: center;
+  padding: clamp(40px, 8vw, 80px) 1rem;
+  max-width: 520px;
+  margin: 0 auto;
+}
+
+.check-circle {
+  width: 80px;
+  height: 80px;
+  background: #D1FAE5;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 1.5rem;
+}
+
+.booking-success h2 {
+  margin: 0 0 .75rem;
+  font: 900 clamp(1.4rem, 3vw, 1.75rem) / 1.2 var(--ff-display);
+  color: var(--gold);
+}
+
+.booking-success p {
+  margin: 0 0 1.75rem;
+  font: 400 1rem var(--ff-sans);
+  color: var(--ink);
+  line-height: 1.6;
+}
+
+.booking-success-actions {
+  display: flex;
+  justify-content: center;
+  gap: .75rem;
+  flex-wrap: wrap;
+}
+
+/* Responsivo */
+@media (max-width: 560px) {
+  .agend-hero-inner img { display: none; }
+
+  .booking-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .booking-field.full {
+    grid-column: 1;
+  }
+
+  .booking-foot {
+    flex-direction: column;
+    align-items: stretch;
+    text-align: center;
+  }
+
+  .booking-foot .btn {
+    width: 100%;
+    justify-content: center;
+  }
+}

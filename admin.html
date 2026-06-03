@@ -16,7 +16,7 @@
     main.admin{padding-block:clamp(16px,3vw,22px)}
     .admin .container{display:grid;gap:clamp(12px,2.5vw,18px)}
 
-    .kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:clamp(10px,2vw,14px)}
+    .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:clamp(10px,2vw,14px)}
     .kpi{background:var(--cream);border:1px solid var(--gold);border-radius:var(--radius-m);padding:12px}
     .kpi h4{margin:0 0 6px 0;font:900 .95rem/1 var(--ff-display);color:var(--gold)}
     .kpi p{margin:0;font:700 1.25rem/1 var(--ff-display);color:var(--ink)}
@@ -79,6 +79,22 @@
     .toast.ok{border-color:#2aa846}.toast.warn{border-color:#bc7a1a}.toast.err{border-color:#e04141}
 
     #pImagePreview{width:100%;max-height:160px;object-fit:cover;border:1px solid var(--gold);border-radius:10px}
+
+    /* Status chips para agendamentos */
+    .status-chip{display:inline-block;padding:.15rem .55rem;border-radius:999px;font:700 .78rem var(--ff-sans)}
+    .status-pendente{background:#FFF3CD;color:#856404}
+    .status-confirmado{background:#D1FAE5;color:#065F46}
+    .status-cancelado{background:#FEE2E2;color:#991B1B}
+    .status-concluido{background:#E5E7EB;color:#374151}
+
+    /* Select inline de status na tabela */
+    .status-select{border:1px solid var(--gold);border-radius:8px;padding:.25rem .5rem;font:600 .82rem var(--ff-sans);background:#fff;color:#2d2a25;cursor:pointer}
+    .status-select:focus{outline:none;box-shadow:0 0 0 2px rgba(196,154,59,.3)}
+
+    /* Modal detalhes agendamento */
+    .detail-row{display:flex;flex-direction:column;gap:.2rem;margin-bottom:.75rem}
+    .detail-label{font:700 .8rem var(--ff-display);color:var(--gold);text-transform:uppercase;letter-spacing:.04em}
+    .detail-value{font:500 .95rem var(--ff-sans);color:#2d2a25}
   </style>
 </head>
 <body>
@@ -114,6 +130,7 @@
           <div class="kpi"><h4>Produtos ativos</h4><p id="kpiProducts">0</p><small class="muted">em catálogo</small></div>
           <div class="kpi"><h4>Pedidos (total)</h4><p id="kpiOrders">0</p><small class="muted">desde o início</small></div>
           <div class="kpi"><h4>Hoje</h4><p id="kpiToday">0</p><small class="muted">pedidos</small></div>
+          <div class="kpi"><h4>Agend. pendentes</h4><p id="kpiAgend">0</p><small class="muted">aguardando confirmação</small></div>
         </div>
       </section>
 
@@ -171,6 +188,43 @@
             </thead>
             <tbody><!-- via JS --></tbody>
           </table>
+        </div>
+      </section>
+
+      <!-- AGENDAMENTOS -->
+      <section id="agendamentos" class="card-block">
+        <div class="card-head">
+          <h3>Agendamentos</h3>
+          <div class="actions">
+            <select id="agendFilter" class="btn-sm">
+              <option value="all">Todos</option>
+              <option value="today">Hoje</option>
+              <option value="pendente">Pendentes</option>
+              <option value="confirmado">Confirmados</option>
+              <option value="cancelado">Cancelados</option>
+              <option value="concluido">Concluídos</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="table-wrap">
+          <table class="table" id="tblAgend" aria-label="Tabela de agendamentos">
+            <thead>
+              <tr>
+                <th>Cliente</th>
+                <th>Serviço</th>
+                <th>Data</th>
+                <th>Horário</th>
+                <th>Status</th>
+                <th class="right">Ações</th>
+              </tr>
+            </thead>
+            <tbody><!-- via JS --></tbody>
+          </table>
+        </div>
+
+        <div class="actions" style="margin-top:.5rem;">
+          <button class="btn-sm ghost" id="btnToggleMoreAgend" type="button">Ver mais</button>
         </div>
       </section>
 
@@ -298,6 +352,31 @@
           <div class="right"><button class="btn-sm solid" type="submit">Salvar</button></div>
         </div>
       </form>
+    </div>
+  </dialog>
+
+  <!-- MODAL: Detalhes do Agendamento -->
+  <dialog class="modal" id="agendModal">
+    <div class="wrap">
+      <div class="head">
+        <h4>Detalhes do Agendamento</h4>
+        <button class="close" type="button" data-close-agend>×</button>
+      </div>
+      <div id="agendModalBody" style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem 1.5rem">
+        <!-- via JS -->
+      </div>
+      <div class="form-foot" style="margin-top:1rem">
+        <button class="btn-sm" type="button" data-close-agend>Fechar</button>
+        <div class="right">
+          <select id="agendModalStatus" class="btn-sm" style="padding:0 .9rem">
+            <option value="pendente">Pendente</option>
+            <option value="confirmado">Confirmado</option>
+            <option value="cancelado">Cancelado</option>
+            <option value="concluido">Concluído</option>
+          </select>
+          <button id="btnSaveAgendStatus" class="btn-sm solid" type="button" style="margin-left:.5rem">Salvar status</button>
+        </div>
+      </div>
     </div>
   </dialog>
 
