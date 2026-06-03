@@ -100,6 +100,10 @@ async function ensureAuthOrShowGate(){
     const today = await supa.from('orders').select('id', { count: 'exact', head: true }).gte('created_at', d0.toISOString());
     $('#kpiToday').textContent = String(today.count || 0);
 
+    const totalAgend = await supa.from('agendamentos').select('id', { count: 'exact', head: true });
+    const kpiAgendTotal = $('#kpiAgendTotal');
+    if(kpiAgendTotal) kpiAgendTotal.textContent = String(totalAgend.count || 0);
+
     const pendentes = await supa.from('agendamentos').select('id', { count: 'exact', head: true }).eq('status', 'pendente');
     const kpiAgend = $('#kpiAgend');
     if(kpiAgend) kpiAgend.textContent = String(pendentes.count || 0);
